@@ -6,6 +6,7 @@ global N_CITIES
 global N_PIXELS
 global N_NODES
 global N_EDGES
+global N_MILESTONES
 
 X_FACTOR = 89.67  # computed on a latitude of 36.25 which is in the middle of our data field
 Y_FACTOR = 111.2
@@ -33,6 +34,7 @@ def init_from_storage():
     global N_PIXELS
     global N_NODES
     global N_EDGES
+    global N_MILESTONES
 
     city_states = np.load('Storage/city_states.npy')
     N_CITIES, N_TIMEFRAMES = np.shape(city_states)
@@ -41,3 +43,6 @@ def init_from_storage():
     N_NODES = len(graph.nodes)
     N_EDGES = len(graph.edges)
     N_PIXELS = N_NODES - N_CITIES
+
+    ms_info = np.load('Storage/milestone_info.npy')
+    N_MILESTONES = len(ms_info)

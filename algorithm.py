@@ -3,12 +3,8 @@ import networkx as nx
 import settings
 
 
-def temporal_activation_probability():
+def temporal_activation_probability(t_rom=None, forget=None):
     T = settings.N_TIMEFRAMES
-
-    t_rom = np.load('Storage/romanization_times.npy')
-    pi = np.load('Storage/influence_matrix.npy')
-    paths = np.load('Storage/shortest_paths.npy', allow_pickle=True)
 
     graph = nx.read_gml('Storage/graph.gml')
     graph = nx.convert_node_labels_to_integers(graph)
@@ -16,13 +12,29 @@ def temporal_activation_probability():
         graph.remove_node(c)
     edges = graph.edges
 
+    if t_rom is None:
+        t_rom = np.load('Storage/romanization_times.npy')
+    pi = np.load('Storage/influence_matrix.npy')
+    paths = np.load('Storage/shortest_paths.npy', allow_pickle=True)
+
+    N_cities = settings.N_CITIES
+    if forget is not None:
+        N_cities = N_cities - 1
+        args = list(range(settings.N_CITIES))
+        args.remove(forget)
+        t_rom = t_rom[args]
+        pi = pi[args].transpose()
+        pi = pi[args].transpose()
+        paths = paths[args].transpose()
+        paths = paths[args].transpose()
+
     beta = np.empty(T, dtype=object)
     for t in range(T):
         beta[t] = {}
         for e in edges:
             beta[t][e] = 1
 
-    for c in range(settings.N_CITIES):
+    for c in range(N_cities):
         P_c = np.where(t_rom < t_rom[c])[0]
         pi_sum = np.sum(pi.transpose()[c][P_c])
 

@@ -90,3 +90,5 @@ def read_milestone_database():
     np.save('Storage/milestone_info.npy', ms_info)
     np.save('Storage/milestone_times.npy', ms_time)
     np.save('Storage/milestone_pos_geo.npy', ms_pos_geo)
+
+    settings.N_MILESTONES = len(ms_info)
