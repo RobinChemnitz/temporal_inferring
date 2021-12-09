@@ -1,5 +1,4 @@
 import numpy as np
-
 import data_reader
 import network_construction
 import dijkstra
