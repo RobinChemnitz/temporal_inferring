@@ -1,7 +1,12 @@
 import numpy as np
 import settings
 
+# This script contains implementations of the influence functions that were proposed in the publication. Requires the
+# shortest path distances between to be computed in advance and saved in the Storage-folder
 
+
+# Computes the influences as proposed in the publication with a distance factor of rho=0.08. Saves the influences as a
+# N-cities x N_cities matrix such that pi[p][c] is the influence of p on c.
 def standard():
     city_distances = np.load('Storage/city_distances.npy')
 
@@ -17,6 +22,9 @@ def standard():
     np.save('Storage/influence_matrix.npy', pi)
 
 
+# Computes the influences as proposed in the publication with a distance factor of rho=0.08. Additionally, the city
+# status is included to increase the influence of ciies with a higher status. Saves the influences as a
+# N-cities x N_cities matrix such that pi[p][c] is the influence of p on c.
 def include_status():
     city_distances = np.load('Storage/city_distances.npy')
     city_states = np.load('Storage/city_states.npy')

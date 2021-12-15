@@ -3,24 +3,29 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
+import imageio
 import matplotlib.cm as cm
 import matplotlib.colors as colors
 import matplotlib.patches as patches
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-import imageio
 import settings
 
+# This script conatins helper functions that plot the results of the method.
 
+
+# This generates the colormap bright_cmap that is used in the publication.
 viridis = cm.get_cmap('viridis')
 bright_cmap = []
 for i in range(256):
     hsv = colors.rgb_to_hsv(viridis(i)[:3])
     hsv[2] = hsv[2] + (1 - hsv[2]) * 0.3
     bright_cmap.append(colors.hsv_to_rgb(hsv))
-
 bright_cmap = colors.ListedColormap(bright_cmap)
 
 
+# Generates and saves an image that displays the indicated edge values as they develop in time. The values should be
+# given as an np.array of the length of the timeframes. Each entry is a dictionary that contains the value of each edge
+# e=(u,v), where u and v are in ascending order.
 def visualize_temporal_edge_values(values, name, labels='AD', vmin=0, vmax=1, colormap='bright', markers=None, mc='red',
                                    ms=40, mstyle='o', fs=24, lw=2.5, one_cbar=True):
     N_frames = len(values)
@@ -78,7 +83,7 @@ def visualize_temporal_edge_values(values, name, labels='AD', vmin=0, vmax=1, co
         dv = vmax / 10
         for k in range(10):
             args = np.where(np.logical_and(k * dv <= abs_values, abs_values <= (k + 1) * dv))[0]
-            edges = edge_list[args]
+            edges = list(edge_list[args])
             nx.draw_networkx_edges(graph, node_pos_geo, edgelist=edges, width=lw + k * lw / 15,
                                    edge_color=edge_values[f][args], edge_vmin=vmin, edge_vmax=vmax, edge_cmap=cmap,
                                    ax=ax)
@@ -128,43 +133,68 @@ def visualize_temporal_edge_values(values, name, labels='AD', vmin=0, vmax=1, co
     plt.close(fig)
 
 
-def draw_network():
-    plt.figure(figsize=(14, 10))
+# Generates the image containing all temporal milestone activations. values is a N_milestones x N_timeframes np.array
+# with the temporal activation of each milestone. cluster is the grouping that is computed by milestone_validation. If
+# an order is specified the milestones are sorted in that way. An order is an N_milstones np.array containing the
+# ordering, see image_generator.milestone_activation() for an example.
+def milestone_evolution(values, clusters, name, order=None):
+    N_frames = len(clusters)
 
-    node_color = 'black'
-    city_color = 'red'
-    node_size = 1
-    city_size = 120
-    edge_width = 3
+    ms_time = np.load('Storage/milestone_times.npy')
+    ms_disc_t = np.ceil(ms_time / settings.TIME_RESOLUTION)
 
-    node_pos_geo = np.load('Storage/node_pos_geo.npy')
-    graph = nx.read_gml('Storage/graph.gml')
-    graph = nx.convert_node_labels_to_integers(graph)
+    rows = int(np.ceil(N_frames / 4))
+    fig, axs = plt.subplots(rows, 4, figsize=(8 / 3 * 4, 3 * rows))
 
-    colors = np.full(settings.N_NODES, node_color)
-    colors[:settings.N_CITIES] = city_color
-    sizes = np.full(settings.N_NODES, node_size)
-    sizes[:settings.N_CITIES] = city_size
+    i = 1
+    for frame in range(4 * rows):
+        r = int(np.floor(frame / 4.0))
+        c = frame % 4
 
-    nx.draw_networkx_nodes(graph, node_pos_geo, node_color=colors, node_size=sizes)
-    nx.draw_networkx_edges(graph, node_pos_geo, width=edge_width)
+        if rows > 1:
+            ax = axs[r, c]
+        else:
+            ax = axs[c]
 
-    plt.xlim([settings.X_MIN, settings.X_MAX])
-    plt.ylim([settings.Y_MIN, settings.Y_MAX])
-    plt.tight_layout()
-    plt.savefig('Output/Network.pdf')
-    plt.close()
+        if frame < N_frames:
+            if order is None:
+                cluster = clusters[frame]
+            else:
+                cluster = clusters[order[frame]]
+
+            ax.plot(np.linspace(0, 8, 9), values[cluster[0]])
+
+            for m in cluster:
+                bar = patches.Rectangle((ms_disc_t[m] - 0.95, 0), 0.9, 2, fc='lightgrey', ec='black', alpha=0.7)
+                ax.add_patch(bar)
+
+            index = ''
+            if len(cluster) == 1:
+                index = str(i)
+                i = i + 1
+            else:
+                index = str(i) + '-' + str(i + len(cluster) - 1)
+                i = i + len(cluster)
+            ax.set_title('milestone: ' + index)
+
+        ax.set_xlim([0, 9])
+        ax.set_ylim([0, 1.1])
+        ax.set_xticks([0, 2, 4, 6, 8])
+
+    fig.tight_layout(rect=[0, 0.03, 1, 0.95])
+
+    plt.savefig('Output/' + name + '.pdf')
 
 
+# Draws a graph onto a high-resolution image of the road map. Works similar to networkx.draw_networkx.
 def draw_graph(graph, pos, origins=[], node_color='royalblue', origin_color='limegreen', edge_color='tomato',
                edge_thickness=3.0, node_size=200, arrows=False, ax=None):
     if ax is None:
         fig = plt.figure(figsize=(14, 10))
         ax = plt.gca()
 
-    #need to update this
-    map = imageio.imread('Data/Roads_35.png')
-    ax.imshow(map, extent=[8, 11.5, 35, 37.5], cmap='binary_r')
+    map = imageio.imread('Data/roads_35.png')
+    ax.imshow(map, extent=[settings.X_MIN, settings.X_MAX, 35, settings.Y_MAX], cmap='binary_r')
     node_list = list(graph.nodes)
 
     if isinstance(node_color, dict):
@@ -182,68 +212,3 @@ def draw_graph(graph, pos, origins=[], node_color='royalblue', origin_color='lim
     else:
         nx.draw_networkx_edges(graph, pos, width=edge_thickness, edge_color=edge_color, ax=ax)
 
-
-def cascade_images(timeframes):
-    frames = len(timeframes)
-
-    D = np.load('Storage/city_distances.npy')
-    t_rom = np.load('Storage/romanization_times.npy')
-    city_pos_geo = np.load('Storage/city_pos_geo.npy')
-
-    distance_factor = 0.5
-    def distance_func(x):
-        x = x * distance_factor
-        return np.exp(-x)
-
-    f = np.vectorize(distance_func, otypes=[float])
-    pi = f(D)
-    pi = pi - np.eye(len(pi))
-
-    edges = []
-    pos = {}
-
-    fig, axs = plt.subplots(1, frames, figsize=(7 * frames, 5.5))
-    current_im = 0
-
-    for t in range(settings.N_TIMEFRAMES):
-        parents = np.where(t_rom < t)[0]
-        C_t = np.where(t_rom == t)[0]
-        graph = nx.Graph()
-        graph.add_nodes_from(parents)
-        graph.add_nodes_from(C_t)
-
-        for c in C_t:
-            pi_sum = np.sum(pi[c][parents])
-            pos[c] = city_pos_geo[c]
-            rnd = np.random.random()
-            cumul = 0
-            for p in parents:
-                cumul = cumul + pi[p][c] / pi_sum
-                if cumul > rnd:
-                    edges.append((p, c))
-                    break
-
-        graph.add_edges_from(edges)
-
-        if t in timeframes:
-            ax = axs[current_im]
-            current_im = current_im + 1
-
-            nodes = list(graph.nodes)
-            origins = list(np.where(t_rom[nodes] == 0)[0])
-
-            colors = np.full(len(nodes), 'royalblue', dtype=object)
-            colors[origins] = 'green'
-            sizes = np.full(len(nodes), 110)
-            sizes[origins] = 140
-
-            draw_graph(graph, pos, node_color=colors, node_size=sizes, edge_thickness=5.3, arrows=False, ax=ax)
-            ax.set_xlabel(str(t * 50) + ' AD', fontsize=24)
-            ax.set_xlim([settings.X_MIN, settings.X_MAX])
-            ax.set_ylim([settings.Y_MIN, settings.Y_MAX])
-
-    fig.tight_layout(rect=[0, 0.033, 1, 1])
-    plt.savefig('Output/Cascade.pdf')
-    plt.close()
-
-#test

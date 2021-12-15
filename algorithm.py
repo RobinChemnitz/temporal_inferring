@@ -2,7 +2,17 @@ import numpy as np
 import networkx as nx
 import settings
 
+# This script contains the implementation of the road-segment activation probability calculation. Requires a fully
+# initialized Storage-folder.
 
+
+# Returns the temporal activation probability alpha of each road-segment as an np.array of dictionaries. alpha has
+# N_timeframes entries each of which is a dictionary containing the activation probabilities of the respective
+# frame. Given an edge e=(u,v), where u and v are in ascending order, and a time-frame t, the activation probability is
+# given by alpha[t][e].
+# With the parameter t_rom one can overwrite the times of romanization of the cities. This is used for the sensitvity
+# analysis. If forget is set of an city index, i.e. integer < N_cities, then the algorithm is performed as if the city
+# did not exist. This is used in the stability analysis.
 def temporal_activation_probability(t_rom=None, forget=None):
     T = settings.N_TIMEFRAMES
 

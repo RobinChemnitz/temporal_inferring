@@ -1,10 +1,13 @@
 import numpy as np
-import matplotlib.pyplot as plt
 import networkx as nx
-import matplotlib.patches as patches
 import settings
 
+# This script calculates the temporal activation of the milestones based on the activation probability of surrounding
+# road-segments. This is used to validate the results of the model.
 
+
+# Determines the temporal activation of each milestone as the maximum activation probability alpha of a road-segment in
+# a radius of sigma km. The activation is returned as a N_milestones x N_timeframes np.array.
 def evaluate_activation_prob(alpha, sigma=5):
     ms_pos_geo = np.load('Storage/milestone_pos_geo.npy')
     ms_pos = settings.geo_to_complex(ms_pos_geo)
@@ -16,8 +19,7 @@ def evaluate_activation_prob(alpha, sigma=5):
     graph = nx.convert_node_labels_to_integers(graph)
     edges = np.array(graph.edges)
 
-    # use setting.N_MILESTONES and different name for values?
-    values = []
+    activation = []
     for p in ms_pos:
         dist = np.abs(node_pos - np.full(len(node_pos), p))
         close = np.where(dist < sigma)[0]
@@ -31,12 +33,56 @@ def evaluate_activation_prob(alpha, sigma=5):
                     for t in range(settings.N_TIMEFRAMES):
                         max_alpha[t] = np.max([alpha[t][(a,b)], max_alpha[t]])
 
-        values.append(max_alpha)
+        activation.append(max_alpha)
 
-    values = np.array(values)
-    return values
+    activation = np.array(activation)
+    return activation
 
 
+# Checks whether there are milestones in the data that lie closer than sigma km togther and have the same time-stamp.
+# Then their are considered to be the same for the milestone validation and the duplicates are deleted from the data in
+# the Storage-folder
+def eliminate_doubles(sigma = 1):
+    M = settings.N_MILESTONES
+
+    ms_pos_geo = np.load('Storage/milestone_pos_geo.npy')
+    ms_pos = settings.geo_to_complex(ms_pos_geo)
+    ms_time = np.load('Storage/milestone_times.npy')
+    ms_disc_t = np.ceil(ms_time / settings.TIME_RESOLUTION)
+
+    eliminated = []
+
+    dist = np.full((M, M), ms_pos) - np.full((M, M), ms_pos).transpose()
+    dist = np.abs(dist)
+    for m in range(M):
+        if m not in eliminated and ms_disc_t[m] > 0:
+            close = np.where(dist[m] < sigma)[0]
+            for c in close:
+                if c != m and ms_disc_t[c] == ms_disc_t[m]:
+                    eliminated.append(c)
+
+    valid = []
+    for m in range(M):
+        if m not in eliminated:
+            valid.append(m)
+    valid = np.array(valid)
+
+    ms_info = np.load('Storage/milestone_info.npy')
+
+    ms_pos_geo = ms_pos_geo[valid]
+    ms_time = ms_time[valid]
+    ms_info = ms_info[valid]
+
+    np.save('Storage/milestone_pos_geo.npy', ms_pos_geo)
+    np.save('Storage/milestone_times.npy', ms_time)
+    np.save('Storage/milestone_info.npy', ms_info)
+
+    settings.N_MILESTONES = len(valid)
+
+
+# Generates the custers in which the milestones are grouped. Milestones that lie within a radus of sigma km are grouped.
+# Returns a list of np.array's that contain the indices of the cluster. If a milestone is not clustered the respective
+# entry is an np.array of length 1.
 def cluster_milestones(sigma = 1):
     M = settings.N_MILESTONES
 
@@ -68,52 +114,3 @@ def cluster_milestones(sigma = 1):
 
     return clusters
 
-
-def milestone_evolution(values, name, order=None):
-    clusters = cluster_milestones()
-    N_frames = len(clusters)
-
-    ms_time = np.load('Storage/milestone_times.npy')
-    ms_timeframe = np.ceil(ms_time / settings.TIME_RESOLUTION)
-
-    rows = int(np.ceil(N_frames / 4))
-    fig, axs = plt.subplots(rows, 4, figsize=(8 / 3 * 4, 3 * rows))
-
-    i = 1
-    for frame in range(4 * rows):
-        r = int(np.floor(frame / 4.0))
-        c = frame % 4
-
-        if rows > 1:
-            ax = axs[r, c]
-        else:
-            ax = axs[c]
-
-        if frame < N_frames:
-            if order is None:
-                cluster = clusters[frame]
-            else:
-                cluster = clusters[order[frame]]
-
-            ax.plot(np.linspace(0, 8, 9), values[cluster[0]])
-
-            for m in cluster:
-                bar = patches.Rectangle((ms_timeframe[m] - 0.95, 0), 0.9, 2, fc='lightgrey', ec='black', alpha=0.7)
-                ax.add_patch(bar)
-
-            index = ''
-            if len(cluster) == 1:
-                index = str(i)
-                i = i + 1
-            else:
-                index = str(i) + '-' + str(i + len(cluster) - 1)
-                i = i + len(cluster)
-            ax.set_title('milestone: ' + index)
-
-        ax.set_xlim([0, 9])
-        ax.set_ylim([0, 1.1])
-        ax.set_xticks([0, 2, 4, 6, 8])
-
-    fig.tight_layout(rect=[0, 0.03, 1, 0.95])
-
-    plt.savefig('Output/' + name + '.pdf')

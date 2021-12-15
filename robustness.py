@@ -2,13 +2,19 @@ import numpy as np
 import algorithm
 import settings
 
+# This script performs the sensitivity/stability analysis like proposed in the publication.
 
+
+# This is a helper function that generates an np.array with N entries according to a bernoulli distribution.
 def bernoulli_perturbation(p, N):
     perturbation = np.random.choice([-1, 0], N, p=[p, 1 - p])
     return perturbation
 
 
-# Optimize this. this is terrible
+# Perturbs the romanization times of the cities with the bernoulli perturbation and tracks the mean-squared-distance.
+# The msd is returned as an np.array of length N_timeframes with dictionaries as entries. The msd of an edge e=(u,v),
+# where u and v are in ascending order in time-frame t is given by msd[t][e].
+# This code is not optimized and very time-consuming.
 def sensitivity(N_simulations=1000, p=0.2):
     T = settings.N_TIMEFRAMES
 
@@ -41,6 +47,9 @@ def sensitivity(N_simulations=1000, p=0.2):
     return np.array(msd)
 
 
+# Performs the computation of the acivation probability alpha as if the city with the specified index did not exist.
+# Returns the squared-distance to the unperturbed activation probability as a dictionary of the edges. Edges e=(u,v)
+# should be sorted such that u and v are in ascending order.
 def stability(city):
     T = settings.N_TIMEFRAMES
 

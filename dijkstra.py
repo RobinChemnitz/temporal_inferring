@@ -2,7 +2,14 @@ import numpy as np
 import scipy.sparse
 import settings
 
+# This script contains the implementation of a Dijkstra-algorithm
 
+
+# Loads the network that is represented by the Storage/distance_network.npz coo_matrix and computes for each pair of
+# cities the shortest paths in the network between them. The paths are saved as a N_cities x N_cities np.array whose
+# entries are lists containing the edges of the shortest paths. An edge is a tuple of the two node indices in ascending
+# order. If there are multiple shortest paths, all of them are added to the list. Also saves the lengths of the the
+# shortest path between any teo cities as a N_cities x N_cities np.array named city_distances.npy.
 def compute_all_shortest_paths():
     A = scipy.sparse.load_npz('Storage/distance_network.npz')
     row = A.row
