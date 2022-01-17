@@ -65,7 +65,7 @@ An `N_NODESx2` float matrix that contains the geographical position of each node
 An `N_MILESTONES` integer array that contains the timeframe in which each of the cities gets romanized.
 
 #### shortest_paths.npy
-An 'N_CITIESxN_CITIES' array that contains python lists. For a pair of cities c1, c2, the list contains all edges that lie in *a* shortest path from c1 to c2. An edge is encoded as a python list of two elements which are the node-indices of its endpoints. These shortest paths are computed in `dijkstra.compute_all_shortest_paths`.
+An 'N_CITIESxN_CITIES' array that contains python lists. For a pair of cities c1, c2, the list contains all edges that lie in *a* shortest path from c1 to c2. An edge is encoded as a python list of two elements which are the node-indices of its endpoints. These shortest paths are computed in `dijkstra.compute_all_shortest_paths`. To load this file it is necessary to set `allow_pickle=True`, i.e. to use `np.load('Storage/shortest_paths.npy', allow_pickle=True)`.
 
 
 
