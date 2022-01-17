@@ -12,7 +12,7 @@ This is an .xls Excel-file which contains the necessary data of the cities that 
 
 | site_key | modern name | latin name | X      |       Y | Status BC | Status 0-50 | ... | Status 350-400 |
 | ---------|-------------|------------|--------|---------|-----------|-------------| --- | ---------------|
-| string   |  string     |  string    |decimal | decimal | string    | sting       | ... |  string        |
+| string   |  string     |  string    |decimal | decimal | string    | string       | ... |  string        |
 
 The first three columns are only information about the cities to identify them more easily but have no effect on the algorithm. The X/Y-values denote the geographical position (longitude/latitude) of the cities and are required to be decimal numbers of the form 12.3456789. The 9 status columns need to contain the strings 'civita', 'municipium' or 'colonia'. Abbreaviations like 'civ', 'mun', 'col' are not accepted. If multiple status are given, e.g. 'civita/colonia', only the higher status is considered. Additional information/annotations in the status fields do not lead to an error, but are simply ignored.
 
