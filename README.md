@@ -56,7 +56,7 @@ An `N_MILESTONESx2` string matrix that contains the information of the milestone
 An `N_MILESTONESx2` float matrix that contains the geographical position of each milestone. The first column contains the longitude and the second column the latitude of the milestone. These geographical positions can be transformed to a more usable format by `storage.geo_to_complex()`.
 
 #### milestone_times.npy
-An `N_MILESTONES` float array that contains the date that is associated to each milestone. This is the mid-point between the start and end date that were provided in the milestone database. To associate this date `ms_time` to a discrete time-frame use `np.ceil(ms_time / settings.TIME_RESOLUTION)`. Note hat this only works properly for positive dates.
+An `N_MILESTONES` float array that contains the date that is associated to each milestone. This is the mid-point between the start and end date that were provided in the milestone database. To associate this date `ms_time` to a discrete time-frame use `np.ceil(ms_time / settings.TIME_RESOLUTION)`. Note that this only works properly for positive dates.
 
 #### node_pos_geo.npy
 An `N_NODESx2` float matrix that contains the geographical position of each node in the road-network. The first column contain the longitude and the second column the latitude of the nodes. These geographical positions can be transformed to a more usable format by `storage.geo_to_complex()`. The first `N_CITIES` columns are of the city-nodes and therefore identical to `city_pos_geo.npy`.
