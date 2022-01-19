@@ -1,22 +1,33 @@
 # temporal_inferring
-This repository contains the code associated to the paper 'Romanization of ancient Tunisia: Inferring temporal activation of the Roman road network' by [AUTHORS]. It contains the algorithm to compute the activation probability of road-segments from a given input database, the verification of the results using a milestone database and a the sensitivity/stability analysis of the method.
+This repository contains the code associated to the paper 'Romanization of ancient Tunisia: Inferring temporal activation of the Roman road network' by [AUTHORS]. It contains the algorithm to compute the activation probability of road-segments from a given input database, the verification of the results using a milestone database and the sensitivity/stability analysis of the method.
+
+## Versions
+
 
 ### On the position datatype
+
+## Program structure
+
+#### main.py
+This is the intende entry point of the program
+
+#### data.reader.py
+This is the first module that needs to becalled from the `main.py` when a new data-set (see Section **Input**) is provided. The 
 
 ## File structure
 ### Input
 The input of the program belongs into the 'Data' folder in the form of three files: 'city_database.xls', 'milestone_database.xls' and 'roads_coarse.png'. We have included another image file 'roads_35.png', which is not necessary for the algorithm and is only used for image generation.
 
-###### city_database.xls
+#### city_database.xls
 This is an .xls Excel-file which contains the necessary data of the cities that should be used in for the algorithm. The exact column structure is required to be readable by the code. The file consists of 14 columns which are the following
 
 | site_key | modern name | latin name | X      |       Y | Status BC | Status 0-50 | ... | Status 350-400 |
 | ---------|-------------|------------|--------|---------|-----------|-------------| --- | ---------------|
-| string   |  string     |  string    |decimal | decimal | string    | string       | ... |  string        |
+| string   |  string     |  string    |decimal | decimal | string    | string      | ... |  string        |
 
 The first three columns are only information about the cities to identify them more easily but have no effect on the algorithm. The X/Y-values denote the geographical position (longitude/latitude) of the cities and are required to be decimal numbers of the form 12.3456789. The 9 status columns need to contain the strings 'civita', 'municipium' or 'colonia'. Abbreaviations like 'civ', 'mun', 'col' are not accepted. If multiple status are given, e.g. 'civita/colonia', only the higher status is considered. Additional information/annotations in the status fields do not lead to an error, but are simply ignored.
 
-###### milestone_database.xls
+#### milestone_database.xls
 This is an .xls Excel-file which contains the necessary data of the milestones that should be used to validate the results. The exact column structure is required to be readable by the code. The file consists of 6 columns which are the following
 
 | ms_key | site_key | start date | end date | X       | Y      |
@@ -25,7 +36,7 @@ This is an .xls Excel-file which contains the necessary data of the milestones t
 
 The first two columns are only information about the milestones to identify them more easily but have no effect in the validation. The start and end date indicate the time period in which the placement of the milestone can be dated. These dates need to be written as an integer for the year without AD/BC. Years BC can be deoted by negative integers. The date that is used b the algorithm for validation is the mid-point between start and end date. The X/Y-values denote the geographical position (longitude/latitude) of the milestones and are required to be decimal numbers of the form 12.3456789.
 
-###### roads_coarse.png
+#### roads_coarse.png
 This image file is the blueprint for the road-network that is considered in the algorithm. It is important that the pixel colors are purely binary, i.e. white or black. Each black pixel of the image represents one node of the network, so the resolution of the image should not be too high. Ideally, the resolution is chosen such that each road only has a width of one pixel.
 
 ### Storage
