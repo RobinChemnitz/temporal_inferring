@@ -1,18 +1,18 @@
 # temporal_inferring
 This repository contains the code associated to the paper 'Romanization of ancient Tunisia: Inferring temporal activation of the Roman road network' by [AUTHORS]. It contains the algorithm to compute the activation probability of road-segments from a given input database, the verification of the results using a milestone database and the sensitivity/stability analysis of the method.
 
-## Versions
-
-
 ### On the position datatype
 
 ## Program structure
 
 #### main.py
-This is the intende entry point of the program
+This is the intended entry point of the program. From here one can load data-sets, execute the algorithm and generate output images. It is important to initializ the settings before any computation, see `settings.py`.
 
 #### data.reader.py
-This is the first module that needs to becalled from the `main.py` when a new data-set (see Section **Input**) is provided. The 
+This is the first module that needs to be called when a new city-/milestone-database (see Section **Input**) is provided. The processed data will be saved into the Storage folder and the information on the cities/milestones in `settings.py` is updated. This module does not handle the input of the road-map, which is handled by `network_construction.py` instead. 
+
+#### network_construction.py
+This module reads the coarse image of the road map and generates a network from it that contains the cities. Hence, the city-database must already be processed in the Storage folder. 
 
 ## File structure
 ### Input
