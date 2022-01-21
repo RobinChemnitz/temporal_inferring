@@ -1,18 +1,16 @@
 # temporal_inferring
 This repository contains the code associated to the paper 'Romanization of ancient Tunisia: Inferring temporal activation of the Roman road network' by [AUTHORS]. It contains the algorithm to compute the activation probability of road-segments from a given input database, the verification of the results using a milestone database and the sensitivity/stability analysis of the method.
 
-### On the position datatype
-
 ## Program structure
 
 #### main.py
-This is the intended entry point of the program. From here one can load data-sets, execute the algorithm and generate output images. It is important to initializ the settings before any computation, see `settings.py`.
+This is the intended entry point of the program. From here one can load data-sets, execute the algorithm and generate output images. It is important to initialize the settings before any computation, see `settings.py`.
 
 #### settings.py
-The main purpose of this module is to store global variables of the program like thenumber of cities, milestones etc. This information needs to be initialized before any computation. This is either done automatically by processing the data using `data_ready.py` and `network_construction.py` or by calling `setting.init_from_storage()` if the processed data is already in the Storage folder.
+The main purpose of this module is to store global variables of the program like thenumber of cities, milestones etc. This information needs to be initialized before any computation. This is either done automatically by processing the data using `data_ready.py` and `network_construction.py` or by calling `setting.init_from_storage()` if the processed data is already in the Storage folder. Additionally, `storage.py` contains the functions to convert geographical coordinates to the complex datatype, see section *On the position datatype*.
 
 #### data.reader.py
-This is the first module that needs to be called when a new city-/milestone-database (see Section **Input**) is provided. The processed data will be saved into the Storage folder and the information on the cities/milestones in `settings.py` is updated. This module does not handle the input of the road-map, which is handled by `network_construction.py` instead. 
+This is the first module that needs to be called when a new city-/milestone-database (see section **Input**) is provided. The processed data will be saved into the Storage folder and the information on the cities/milestones in `settings.py` is updated. This module does not handle the input of the road-map, which is handled by `network_construction.py` instead. 
 
 #### network_construction.py
 This module reads the coarse image of the road map and generates a network from it that contains the cities. Hence, the city-database must already be processed in the Storage folder. 
@@ -39,6 +37,11 @@ This module is directing the creation of the output images which are shown in th
 This module contains the code that builds up the images which can be seen in the publication. To generate the images, use the functions `image_generator.py` instead. If major changes in the images are desired, these changes can be made in `plots.py`.
 
 ## File structure
+
+### On the position datatype
+The locations of cities, milestones, network nodes are usually provided in the form of geographical coordinates, i.e. longitude and latitude. We call this type of position the *geographical position* and store it as a list or numpy array of length 2. However, geographical coordinates are not particularly easy to handle, e.g. when computing distances. Therfore, we convert gepgraphical coordinates into complex numbers where the real part encodes the longitude and the imaginary part encodes the latitude. The conversion of longitude-/latitude-units to kilometers is dependent on the position on the globe. However, the region that we consider is small enough that these differences become 
+negligible. We apply a conversion of 1 longitude-unit = 89.67 km and 1 latitude-unit = 111.2 km. Converting one data-type into the other can be done using `settings.py`. Generally, position data should always be converted to geographical coordinates before using them in an output. 
+
 ### Input
 The input of the program belongs into the 'Data' folder in the form of three files: 'city_database.xls', 'milestone_database.xls' and 'roads_coarse.png'. We have included another image file 'roads_35.png', which is not necessary for the algorithm and is only used for image generation.
 
