@@ -8,11 +8,26 @@ This repository contains the code associated to the paper 'Romanization of ancie
 #### main.py
 This is the intended entry point of the program. From here one can load data-sets, execute the algorithm and generate output images. It is important to initializ the settings before any computation, see `settings.py`.
 
+#### settings.py
+The main purpose of this module is to store global variables of the program like thenumber of cities, milestones etc. This information needs to be initialized before any computation. This is either done automatically by processing the data using `data_ready.py` and `network_construction.py` or by calling `setting.init_from_storage()` if the processed data is already in the Storage folder.
+
 #### data.reader.py
 This is the first module that needs to be called when a new city-/milestone-database (see Section **Input**) is provided. The processed data will be saved into the Storage folder and the information on the cities/milestones in `settings.py` is updated. This module does not handle the input of the road-map, which is handled by `network_construction.py` instead. 
 
 #### network_construction.py
 This module reads the coarse image of the road map and generates a network from it that contains the cities. Hence, the city-database must already be processed in the Storage folder. 
+
+#### dijkstra.py
+This module only conists of an implementation of Dijkstra's algorithm, which is used in the network construction. We implemented a modified version of the algorithm tha computes *all* shortest paths if there are multiple.
+
+#### compute_influences.py
+This module contains thecomputation of the influence functions that were proposed in the paper. When called, these functions compute all influences in a matrix which is saved into the Storage folder as `influence_matrix.npy`, see the Storage section below.
+
+#### algorithm.py
+This module only contains one function which is the main algorithm of the program, which computes the activation probability of each road-segment for each point in time. When executing the algorithm, the Storage folder must be fully initialized, including `influence_matrix.npy` which is computed by `compute_influences.py`.
+
+#### milestone_validation.py
+This module contains the computation of the activation probability of each of the milestones. This requires the Storage folder to be fully initialized and takes the activation probability of the road-segments as an input. This activation probability can be computed using `algorithm.py`. If desired, duplicates in the milestone data can be eliminated before executing `evaluate_activation_prob` by calling `eliminate_doubles()`. An example of the full use of `milestone_validation.py` can be seen in `image_generator.milestone_activation()`.
 
 ## File structure
 ### Input
