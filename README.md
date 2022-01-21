@@ -21,13 +21,22 @@ This module reads the coarse image of the road map and generates a network from 
 This module only conists of an implementation of Dijkstra's algorithm, which is used in the network construction. We implemented a modified version of the algorithm tha computes *all* shortest paths if there are multiple.
 
 #### compute_influences.py
-This module contains thecomputation of the influence functions that were proposed in the paper. When called, these functions compute all influences in a matrix which is saved into the Storage folder as `influence_matrix.npy`, see the Storage section below.
+This module contains thecomputation of the influence functions that were proposed in the paper. When called, these functions compute all influences in a matrix which is saved into the Storage folder as `influence_matrix.npy`, see the **Storage** section below.
 
 #### algorithm.py
 This module only contains one function which is the main algorithm of the program, which computes the activation probability of each road-segment for each point in time. When executing the algorithm, the Storage folder must be fully initialized, including `influence_matrix.npy` which is computed by `compute_influences.py`.
 
 #### milestone_validation.py
 This module contains the computation of the activation probability of each of the milestones. This requires the Storage folder to be fully initialized and takes the activation probability of the road-segments as an input. This activation probability can be computed using `algorithm.py`. If desired, duplicates in the milestone data can be eliminated before executing `evaluate_activation_prob` by calling `eliminate_doubles()`. An example of the full use of `milestone_validation.py` can be seen in `image_generator.milestone_activation()`.
+
+#### robustness.py
+This module computes the sensitiity and stability of the method. This requires the Storage folder to be fully initialized, including `influence_matrix.npy`. Since the sensitivity uses a Monte Carlo method of at least 1000 iterations, this computation can be very time-consuming.
+
+#### image_generator.py
+This module is directing the creation of the output images which are shown in the puplication. Each of these functions can be seen as an example of how the respecive features of the program can be used. Minor tweaks in the parameters of the image generation can be done here. The actual code that builds the images is out-sourced to `plots.py`.
+
+#### plots.py
+This module contains the code that builds up the images which can be seen in the publication. To generate the images, use the functions `image_generator.py` instead. If major changes in the images are desired, these changes can be made in `plots.py`.
 
 ## File structure
 ### Input
